@@ -11,8 +11,12 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;600;800&display=swap" rel="stylesheet">
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#0f172a">
-    <meta name="apple-mobile-web-app-capable" content="yes">
+    
+    <!-- Correção das Meta Tags depreciadas -->
+    <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <link rel="apple-touch-icon" href="https://picsum.photos/192/192">
+    
     <style>
         :root {
             --font-scale: 100%;
@@ -21,6 +25,7 @@
             font-family: 'Inter', sans-serif;
             font-size: var(--font-scale);
             -webkit-tap-highlight-color: transparent;
+            overflow-x: hidden;
         }
         h1, h2, h3, .brand {
             font-family: 'Outfit', sans-serif;
@@ -40,6 +45,20 @@
         .dark .glass-effect {
             background: rgba(0, 0, 0, 0.2);
             border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+        /* Otimização de scroll premium */
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 10px;
+        }
+        .dark ::-webkit-scrollbar-thumb {
+            background: #334155;
         }
     </style>
 <script type="importmap">

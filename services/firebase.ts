@@ -1,7 +1,6 @@
 
 import { initializeApp } from 'firebase/app';
 import { 
-  getFirestore, 
   initializeFirestore,
   persistentLocalCache,
   persistentMultipleTabManager,
@@ -20,36 +19,38 @@ import {
 } from 'firebase/firestore';
 import { getMessaging } from 'firebase/messaging';
 
+// Configuração Demo - Substitua pelos valores reais do seu console Firebase
 const firebaseConfig = {
-  apiKey: "YOUR_API_KEY", // O usuário deve substituir pelas suas chaves
-  authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
-  projectId: "YOUR_PROJECT_ID",
-  storageBucket: "YOUR_PROJECT_ID.appspot.com",
-  messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
-  appId: "YOUR_APP_ID"
+  apiKey: "DEMO_KEY_PLACEHOLDER",
+  authDomain: "project-manager-demo.firebaseapp.com",
+  projectId: "project-manager-demo",
+  storageBucket: "project-manager-demo.appspot.com",
+  messagingSenderId: "000000000000",
+  appId: "1:000000000000:web:000000000000"
 };
 
-let app;
-let db: any;
-let messaging: any;
+let db: any = null;
+let messaging: any = null;
 
 try {
-  app = initializeApp(firebaseConfig);
+  const app = initializeApp(firebaseConfig);
   
-  // Inicialização com cache persistente multinível para PWA
+  // Cache persistente é crucial para o modo PWA funcionar sem internet
   db = initializeFirestore(app, {
     localCache: persistentLocalCache({
       tabManager: persistentMultipleTabManager()
     })
   });
 
-  try {
-    messaging = getMessaging(app);
-  } catch (e) {
-    console.warn("FCM not supported or enabled in this browser");
+  if (typeof window !== 'undefined' && 'serviceWorker' in navigator) {
+    try {
+      messaging = getMessaging(app);
+    } catch (e) {
+      console.warn("FCM não suportado neste navegador.");
+    }
   }
 } catch (e) {
-  console.error("Firebase failed to initialize. Check your configuration.", e);
+  console.error("Falha ao inicializar Firebase. O app entrará em modo de visualização offline.");
 }
 
 export { 

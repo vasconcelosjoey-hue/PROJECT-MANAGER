@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect } from 'react';
-import { Moon, Sun, Monitor, Type, Bell, Shield, Smartphone, Download } from 'lucide-react';
+import { Moon, Sun, Monitor, Type, Bell, Smartphone, Download, Check } from 'lucide-react';
 import { FirestoreService } from '../services/firestoreService';
 import { messaging, getToken } from '../services/firebase';
 
@@ -12,6 +12,7 @@ export const Settings: React.FC<SettingsProps> = ({ setTheme }) => {
   const [currentTheme, setCurrentTheme] = useState<'light' | 'dark'>('dark');
   const [fontScale, setFontScale] = useState(100);
   const [installPrompt, setInstallPrompt] = useState<any>(null);
+  const [pushStatus, setPushStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
 
   useEffect(() => {
     const load = async () => {
@@ -27,6 +28,11 @@ export const Settings: React.FC<SettingsProps> = ({ setTheme }) => {
       e.preventDefault();
       setInstallPrompt(e);
     });
+
+    // Verifica se já tem permissão concedida anteriormente
+    if ("Notification" in window && Notification.permission === "granted") {
+        setPushStatus('success');
+    }
   }, []);
 
   const handleThemeChange = async (t: 'light' | 'dark') => {
@@ -43,19 +49,46 @@ export const Settings: React.FC<SettingsProps> = ({ setTheme }) => {
   };
 
   const requestNotificationPermission = async () => {
+    setPushStatus('loading');
     try {
+      if (!("Notification" in window)) {
+          alert("Este navegador não suporta notificações.");
+          setPushStatus('error');
+          return;
+      }
+
       const permission = await Notification.requestPermission();
+      
       if (permission === 'granted' && messaging) {
-        const token = await getToken(messaging, { 
-          vapidKey: 'YOUR_VAPID_KEY_HERE' // Substitua pela chave do seu console Firebase
+        // Usando a chave VAPID que você gerou na imagem
+        const vapidKey = 'BLeB5994v6MxN38numEz9hPcz6FaQtMBVfI9EltZhEBmtFlpznQ4Zb2fGwPlRd5nTamy_meltRbaupessxwh8ks';
+        
+        const token = await getToken(messaging, { vapidKey }).catch((err) => {
+            console.error("Erro ao obter token FCM:", err);
+            return null;
         });
-        console.log('FCM Token:', token);
-        alert('Notificações ativadas com sucesso!');
+
+        if (token) {
+            console.log('FCM Token Gerado:', token);
+            // Registra no log para confirmar que funcionou
+            await FirestoreService.addLog({
+                title: 'Notificações Ativadas',
+                details: `Dispositivo registrado com sucesso. Token: ${token.substring(0, 10)}...`
+            });
+            setPushStatus('success');
+        } else {
+            setPushStatus('error');
+            alert('Não foi possível gerar o token de identificação. Verifique se está em HTTPS.');
+        }
       } else {
-        alert('Permissão de notificação negada ou não suportada.');
+        setPushStatus('error');
+        if (permission === 'denied') {
+            alert('Você bloqueou as notificações. Ative-as nas configurações do seu navegador.');
+        }
       }
     } catch (error) {
-      console.error('Erro ao pedir permissão:', error);
+      console.error('Erro no processo de push:', error);
+      setPushStatus('error');
     }
   };
 
@@ -134,15 +167,20 @@ export const Settings: React.FC<SettingsProps> = ({ setTheme }) => {
                     </div>
                 </div>
                 <button 
+                  disabled={pushStatus === 'success' || pushStatus === 'loading'}
                   onClick={requestNotificationPermission}
-                  className="bg-indigo-600 text-white px-6 py-3 rounded-xl text-sm font-bold shadow-lg shadow-indigo-600/20"
+                  className={`px-6 py-3 rounded-xl text-sm font-bold shadow-lg transition-all ${
+                    pushStatus === 'success' ? 'bg-green-500 text-white' : 
+                    pushStatus === 'loading' ? 'bg-slate-200 text-slate-400' :
+                    'bg-indigo-600 text-white shadow-indigo-600/20 active:scale-95'
+                  }`}
                 >
-                    Ativar
+                    {pushStatus === 'success' ? <Check size={20} /> : pushStatus === 'loading' ? '...' : 'Ativar'}
                 </button>
             </div>
 
             {installPrompt && (
-              <div className="bg-indigo-600 rounded-[2rem] p-6 text-white flex items-center justify-between shadow-xl shadow-indigo-600/30">
+              <div className="bg-indigo-600 rounded-[2rem] p-6 text-white flex items-center justify-between shadow-xl shadow-indigo-600/30 animate-in fade-in zoom-in-95">
                   <div className="flex items-center space-x-4">
                       <Download size={24} />
                       <div>
@@ -152,7 +190,7 @@ export const Settings: React.FC<SettingsProps> = ({ setTheme }) => {
                   </div>
                   <button 
                     onClick={() => installPrompt.prompt()}
-                    className="bg-white text-indigo-600 px-6 py-3 rounded-xl text-sm font-bold"
+                    className="bg-white text-indigo-600 px-6 py-3 rounded-xl text-sm font-bold active:scale-95 transition-transform"
                   >
                       Instalar
                   </button>

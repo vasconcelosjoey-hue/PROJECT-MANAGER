@@ -17,7 +17,7 @@ import {
   deleteDoc, 
   addDoc 
 } from 'firebase/firestore';
-import { getMessaging, getToken, onMessage } from 'firebase/messaging';
+import { getMessaging, getToken, onMessage, isSupported } from 'firebase/messaging';
 
 const firebaseConfig = {
   apiKey: "AIzaSyBqMiJ-tZhCR8V24QbnKEfAKriXC-ztvJw",
@@ -40,9 +40,13 @@ try {
     })
   });
 
-  if (typeof window !== 'undefined' && 'serviceWorker' in navigator) {
-    messaging = getMessaging(app);
-  }
+  // Só inicializa messaging se o navegador suportar
+  isSupported().then(supported => {
+    if (supported && typeof window !== 'undefined' && 'serviceWorker' in navigator) {
+      messaging = getMessaging(app);
+    }
+  });
+
 } catch (e) {
   console.error("Firebase Init Error:", e);
 }

@@ -7,25 +7,36 @@ import { Project, Phase, Subphase, TaskLog, Reminder, UserSettings } from '../ty
 
 const DEMO_USER_ID = "demo";
 
-const handleFirestoreError = (error: any, fallback: any = []) => {
+const handleFirestoreError = (error: any, context: string, fallback: any = []) => {
   if (!db) {
-    console.warn("Firestore não inicializado.");
+    console.warn(`PM [${context}]: Banco de dados não inicializado.`);
     return fallback;
   }
   
-  // Tratamento específico para estado offline
   if (error?.code === 'unavailable' || error?.message?.includes('offline')) {
-    console.debug("Offline: Operando com cache local persistente.");
+    console.debug(`PM [${context}]: Modo Offline. Usando cache local.`);
     return fallback;
   }
   
-  // Erro de configuração ou permissão
-  if (error?.code === 'permission-denied' || error?.code === 'not-found') {
-    console.error("Firestore: Erro de permissão ou documento não encontrado. Verifique as regras de segurança.");
+  if (error?.code === 'permission-denied') {
+    const msg = `
+      🚨 ERRO DE PERMISSÃO NO FIREBASE! 🚨
+      O seu banco está configurado com 'if false;'. 
+      Acesse o Console do Firebase > Firestore Database > Rules
+      e mude para: allow read, write: if true;
+      Depois clique em PUBLICAR.
+    `;
+    console.error(msg);
+    alert("Erro de Permissão: Verifique as Regras (Rules) no Console do Firebase.");
     return fallback;
   }
 
-  console.error("Erro no Firestore:", error);
+  if (error?.code === 'not-found') {
+    console.error(`PM [${context}]: Firestore não encontrado. Crie o banco no console.`);
+    return fallback;
+  }
+
+  console.error(`PM [${context}] Erro desconhecido:`, error);
   return fallback;
 };
 
@@ -37,7 +48,7 @@ export const FirestoreService = {
       const snapshot = await getDocs(q);
       return snapshot.docs.map(d => ({ id: d.id, ...d.data() } as Project));
     } catch (e) {
-      return handleFirestoreError(e, []);
+      return handleFirestoreError(e, 'getProjects', []);
     }
   },
 
@@ -49,9 +60,10 @@ export const FirestoreService = {
         ownerId: DEMO_USER_ID,
         createdAt: serverTimestamp(),
         updatedAt: serverTimestamp(),
+        orderIndex: project.orderIndex || 0
       });
     } catch (e) {
-      return handleFirestoreError(e, null);
+      return handleFirestoreError(e, 'addProject', null);
     }
   },
 
@@ -61,7 +73,7 @@ export const FirestoreService = {
       const ref = doc(db, 'projects', id);
       return await updateDoc(ref, { ...data, updatedAt: serverTimestamp() });
     } catch (e) {
-      return handleFirestoreError(e, null);
+      return handleFirestoreError(e, 'updateProject', null);
     }
   },
 
@@ -70,7 +82,7 @@ export const FirestoreService = {
       if (!db) return null;
       return await deleteDoc(doc(db, 'projects', id));
     } catch (e) {
-      return handleFirestoreError(e, null);
+      return handleFirestoreError(e, 'deleteProject', null);
     }
   },
 
@@ -81,7 +93,7 @@ export const FirestoreService = {
       const snapshot = await getDocs(q);
       return snapshot.docs.map(d => ({ id: d.id, ...d.data() } as Phase));
     } catch (e) {
-      return handleFirestoreError(e, []);
+      return handleFirestoreError(e, 'getPhases', []);
     }
   },
 
@@ -95,7 +107,7 @@ export const FirestoreService = {
         updatedAt: serverTimestamp(),
       });
     } catch (e) {
-      return handleFirestoreError(e, null);
+      return handleFirestoreError(e, 'addPhase', null);
     }
   },
 
@@ -105,7 +117,7 @@ export const FirestoreService = {
       const ref = doc(db, 'phases', id);
       return await updateDoc(ref, { ...data, updatedAt: serverTimestamp() });
     } catch (e) {
-      return handleFirestoreError(e, null);
+      return handleFirestoreError(e, 'updatePhase', null);
     }
   },
 
@@ -114,7 +126,7 @@ export const FirestoreService = {
       if (!db) return null;
       return await deleteDoc(doc(db, 'phases', id));
     } catch (e) {
-      return handleFirestoreError(e, null);
+      return handleFirestoreError(e, 'deletePhase', null);
     }
   },
 
@@ -125,7 +137,7 @@ export const FirestoreService = {
       const snapshot = await getDocs(q);
       return snapshot.docs.map(d => ({ id: d.id, ...d.data() } as Subphase));
     } catch (e) {
-      return handleFirestoreError(e, []);
+      return handleFirestoreError(e, 'getSubphases', []);
     }
   },
 
@@ -139,7 +151,7 @@ export const FirestoreService = {
         updatedAt: serverTimestamp(),
       });
     } catch (e) {
-      return handleFirestoreError(e, null);
+      return handleFirestoreError(e, 'addSubphase', null);
     }
   },
 
@@ -149,7 +161,7 @@ export const FirestoreService = {
       const ref = doc(db, 'subphases', id);
       return await updateDoc(ref, { ...data, updatedAt: serverTimestamp() });
     } catch (e) {
-      return handleFirestoreError(e, null);
+      return handleFirestoreError(e, 'updateSubphase', null);
     }
   },
 
@@ -158,7 +170,7 @@ export const FirestoreService = {
       if (!db) return null;
       return await deleteDoc(doc(db, 'subphases', id));
     } catch (e) {
-      return handleFirestoreError(e, null);
+      return handleFirestoreError(e, 'deleteSubphase', null);
     }
   },
 
@@ -167,9 +179,9 @@ export const FirestoreService = {
       if (!db) return null;
       const ref = doc(db, 'userSettings', DEMO_USER_ID);
       const snap = await getDoc(ref);
-      return snap.exists() ? snap.data() as UserSettings : null;
+      return snap.exists() ? snap.data() as UserSettings : { theme: 'dark', fontScale: 100 };
     } catch (e) {
-      return handleFirestoreError(e, null);
+      return handleFirestoreError(e, 'getSettings', { theme: 'dark', fontScale: 100 });
     }
   },
 
@@ -179,7 +191,7 @@ export const FirestoreService = {
       const ref = doc(db, 'userSettings', DEMO_USER_ID);
       return await setDoc(ref, settings, { merge: true });
     } catch (e) {
-      return handleFirestoreError(e, null);
+      return handleFirestoreError(e, 'updateSettings', null);
     }
   },
 
@@ -190,7 +202,7 @@ export const FirestoreService = {
       const snapshot = await getDocs(q);
       return snapshot.docs.map(d => ({ id: d.id, ...d.data() } as TaskLog));
     } catch (e) {
-      return handleFirestoreError(e, []);
+      return handleFirestoreError(e, 'getLogs', []);
     }
   },
 
@@ -203,7 +215,7 @@ export const FirestoreService = {
         createdAt: serverTimestamp(),
       });
     } catch (e) {
-      return handleFirestoreError(e, null);
+      return handleFirestoreError(e, 'addLog', null);
     }
   },
 
@@ -214,7 +226,7 @@ export const FirestoreService = {
       const snapshot = await getDocs(q);
       return snapshot.docs.map(d => ({ id: d.id, ...d.data() } as Reminder));
     } catch (e) {
-      return handleFirestoreError(e, []);
+      return handleFirestoreError(e, 'getReminders', []);
     }
   },
 
@@ -228,7 +240,7 @@ export const FirestoreService = {
         createdAt: serverTimestamp(),
       });
     } catch (e) {
-      return handleFirestoreError(e, null);
+      return handleFirestoreError(e, 'addReminder', null);
     }
   },
 
@@ -238,7 +250,7 @@ export const FirestoreService = {
       const ref = doc(db, 'reminders', id);
       return await updateDoc(ref, data);
     } catch (e) {
-      return handleFirestoreError(e, null);
+      return handleFirestoreError(e, 'updateReminder', null);
     }
   },
 
@@ -247,7 +259,7 @@ export const FirestoreService = {
       if (!db) return null;
       return await deleteDoc(doc(db, 'reminders', id));
     } catch (e) {
-      return handleFirestoreError(e, null);
+      return handleFirestoreError(e, 'deleteReminder', null);
     }
   }
 };

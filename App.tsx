@@ -17,24 +17,28 @@ const App: React.FC = () => {
   const [theme, setTheme] = useState<'light' | 'dark'>('dark');
 
   useEffect(() => {
-    // Sequência de carregamento inicial
     const init = async () => {
-      // Reduzido de 2500ms para 800ms para maior agilidade
-      const timer = new Promise(r => setTimeout(r, 800));
+      console.log("PM: Iniciando sequência de boot...");
       
+      // Timeout de 2.5s para garantir que o app carregue mesmo se o Firebase falhar
+      const timeout = new Promise(resolve => setTimeout(() => resolve('timeout'), 2500));
       const settingsPromise = FirestoreService.getSettings();
       
-      // Aguarda ambos (o timer mínimo e a busca de configurações)
-      const [settings] = await Promise.all([settingsPromise, timer]);
-
-      if (settings) {
-        setTheme(settings.theme);
-        document.documentElement.classList.toggle('dark', settings.theme === 'dark');
-        document.documentElement.style.setProperty('--font-scale', `${settings.fontScale}%`);
-      } else {
-        document.documentElement.classList.add('dark');
+      try {
+        const result = await Promise.race([settingsPromise, timeout]);
+        
+        if (result === 'timeout') {
+          console.warn("PM: O Firebase demorou demais para responder. Entrando em modo resiliente.");
+        } else if (result) {
+          const settings = result as any;
+          setTheme(settings.theme);
+          document.documentElement.classList.toggle('dark', settings.theme === 'dark');
+          document.documentElement.style.setProperty('--font-scale', `${settings.fontScale}%`);
+        }
+      } catch (err) {
+        console.error("PM: Erro crítico no carregamento inicial:", err);
       }
-      
+
       // Verificação de auth demo
       const demoAuth = localStorage.getItem('demo_auth');
       if (demoAuth === 'true') setIsAuth(true);

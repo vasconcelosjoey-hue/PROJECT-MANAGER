@@ -15,11 +15,13 @@ root.render(
   </React.StrictMode>
 );
 
-// Register Service Worker for PWA
+// Register Service Worker for PWA - Caminho relativo para maior compatibilidade
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {
-    navigator.serviceWorker.register('/sw.js').catch(err => {
-      console.log('SW registration failed: ', err);
+    navigator.serviceWorker.register('./sw.js').then(reg => {
+      console.log('PM: Service Worker registrado com sucesso.');
+    }).catch(err => {
+      console.warn('PM: Falha ao registrar Service Worker (comum em dev local):', err);
     });
   });
 }

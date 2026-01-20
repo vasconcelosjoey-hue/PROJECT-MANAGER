@@ -9,23 +9,23 @@ import { Logs } from './views/Logs';
 import { Settings } from './views/Settings';
 import { Login } from './views/Login';
 import { LoadingScreen } from './components/LoadingScreen';
-import { FirestoreService, isFirestoreBlocked } from './services/firestoreService';
-import { AlertTriangle, X } from 'lucide-react';
+import { FirestoreService } from './services/firestoreService';
+import { AlertTriangle, X, RefreshCw } from 'lucide-react';
 
 const App: React.FC = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [isAuth, setIsAuth] = useState(false);
   const [theme, setTheme] = useState<'light' | 'dark'>('dark');
-  const [showWarning, setShowWarning] = useState(false);
+  const [isBlocked, setIsBlocked] = useState(false);
+
+  const checkStatus = async () => {
+    const isHealthy = await FirestoreService.checkHealth();
+    setIsBlocked(!isHealthy);
+  };
 
   useEffect(() => {
     const init = async () => {
-      // Testar saúde do Firestore antes de tudo
-      await FirestoreService.checkHealth();
-      
-      if (isFirestoreBlocked) {
-        setShowWarning(true);
-      }
+      await checkStatus();
 
       const settings = await FirestoreService.getSettings();
       if (settings) {
@@ -40,7 +40,14 @@ const App: React.FC = () => {
       setIsLoading(false);
     };
     init();
-  }, []);
+
+    // Check every 30 seconds if still blocked
+    const interval = setInterval(() => {
+        if (isBlocked) checkStatus();
+    }, 30000);
+
+    return () => clearInterval(interval);
+  }, [isBlocked]);
 
   if (isLoading) {
     return <LoadingScreen />;
@@ -48,18 +55,29 @@ const App: React.FC = () => {
 
   return (
     <Router>
-      {showWarning && (
-        <div className="fixed bottom-4 left-4 right-4 z-[9999] bg-red-600 text-white p-4 rounded-2xl shadow-2xl flex items-center justify-between border-2 border-white/20 animate-in slide-in-from-bottom-4">
-          <div className="flex items-center space-x-3">
-            <AlertTriangle className="flex-shrink-0" />
-            <div className="text-xs font-bold leading-tight">
-              <p className="uppercase tracking-widest">Acesso ao Banco Bloqueado</p>
-              <p className="opacity-80 font-medium">Mude 'if false;' para 'if true;' no Console Firebase > Rules e clique em PUBLICAR.</p>
+      {isBlocked && (
+        <div className="fixed bottom-4 left-4 right-4 z-[9999] bg-red-600 text-white p-4 md:p-6 rounded-[2rem] shadow-2xl flex items-center justify-between border-2 border-white/20 animate-in slide-in-from-bottom-4 backdrop-blur-md bg-opacity-95">
+          <div className="flex items-center space-x-4">
+            <div className="w-12 h-12 bg-white/10 rounded-2xl flex items-center justify-center animate-pulse">
+                <AlertTriangle size={24} />
+            </div>
+            <div className="text-xs font-bold leading-tight uppercase tracking-tighter">
+              <p className="text-sm font-black mb-1">Acesso ao Banco Bloqueado</p>
+              <p className="opacity-80 font-medium normal-case">Mude 'if false;' para 'if true;' no Console Firebase > Rules e clique em PUBLICAR.</p>
             </div>
           </div>
-          <button onClick={() => setShowWarning(false)} className="p-2 hover:bg-white/10 rounded-full">
-            <X size={16} />
-          </button>
+          <div className="flex items-center space-x-2">
+            <button 
+              onClick={checkStatus} 
+              className="p-3 bg-white/10 hover:bg-white/20 rounded-xl transition-all flex items-center space-x-2"
+            >
+              <RefreshCw size={16} />
+              <span className="hidden md:inline text-[10px] font-black uppercase">Testar Agora</span>
+            </button>
+            <button onClick={() => setIsBlocked(false)} className="p-3 hover:bg-white/10 rounded-xl">
+              <X size={20} />
+            </button>
+          </div>
         </div>
       )}
 

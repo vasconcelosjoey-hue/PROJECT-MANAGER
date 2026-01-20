@@ -12,10 +12,8 @@
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#0f172a">
     
-    <!-- Favicon dinâmico para evitar 404 -->
     <link rel="icon" type="image/png" href="https://picsum.photos/32/32">
     
-    <!-- Meta Tags PWA Apple -->
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-title" content="PMANAGER">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -47,7 +45,6 @@
             -webkit-backdrop-filter: blur(12px);
             border: 1px solid rgba(255, 255, 255, 0.1);
         }
-        /* Otimização de scroll premium */
         ::-webkit-scrollbar {
             width: 6px;
         }
@@ -58,7 +55,6 @@
             background: #475569;
             border-radius: 10px;
         }
-        /* Animações nativas */
         .animate-in {
             animation-duration: 0.3s;
             animation-fill-mode: forwards;
@@ -79,5 +75,7 @@
 </head>
 <body class="bg-slate-50 text-slate-900 dark:bg-slate-950 dark:text-slate-100 transition-colors duration-300">
     <div id="root"></div>
+    <!-- Script de entrada obrigatório para o React rodar -->
+    <script type="module" src="index.tsx"></script>
 </body>
 </html>

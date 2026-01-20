@@ -1,8 +1,8 @@
 
 import React, { useState, useEffect } from 'react';
 import { Plus, Edit3, Trash2, ExternalLink, Calendar, LayoutGrid, X } from 'lucide-react';
-import { FirestoreService } from '../services/firestoreService';
-import { Project, ProjectStatus } from '../types';
+import { FirestoreService } from '../services/firestoreService.ts';
+import { Project, ProjectStatus } from '../types.ts';
 import { Link } from 'react-router-dom';
 
 export const ProjectList: React.FC = () => {

@@ -2,25 +2,23 @@
 import { 
   db, collection, doc, setDoc, getDoc, getDocs, query, 
   where, orderBy, updateDoc, deleteDoc, addDoc, serverTimestamp 
-} from './firebase';
-import { Project, Phase, Subphase, TaskLog, Reminder, UserSettings } from '../types';
+} from './firebase.ts';
+import { Project, Phase, Subphase, TaskLog, Reminder, UserSettings } from '../types.ts';
 
 const DEMO_USER_ID = "demo";
 
-// Sistema de monitoramento de saúde do Firestore
 export const FirestoreService = {
   checkHealth: async (): Promise<boolean> => {
     try {
       if (!db) return false;
-      // Tentativa de leitura em uma coleção qualquer para testar permissão
       const q = query(collection(db, 'projects'), where('ownerId', '==', 'health-check'), orderBy('orderIndex'));
       await getDocs(q);
-      return true; // Se não lançou erro, o acesso está liberado
+      return true;
     } catch (e: any) {
       if (e?.code === 'permission-denied') {
         return false;
       }
-      return true; // Outros erros (offline) não significam bloqueio de regra
+      return true;
     }
   },
 

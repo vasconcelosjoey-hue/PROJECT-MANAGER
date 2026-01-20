@@ -1,15 +1,15 @@
 
 import React, { useState, useEffect } from 'react';
 import { HashRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
-import { Layout } from './components/Layout';
-import { ProjectList } from './views/ProjectList';
-import { ProjectDetail } from './views/ProjectDetail';
-import { Reminders } from './views/Reminders';
-import { Logs } from './views/Logs';
-import { Settings } from './views/Settings';
-import { Login } from './views/Login';
-import { LoadingScreen } from './components/LoadingScreen';
-import { FirestoreService } from './services/firestoreService';
+import { Layout } from './components/Layout.tsx';
+import { ProjectList } from './views/ProjectList.tsx';
+import { ProjectDetail } from './views/ProjectDetail.tsx';
+import { Reminders } from './views/Reminders.tsx';
+import { Logs } from './views/Logs.tsx';
+import { Settings } from './views/Settings.tsx';
+import { Login } from './views/Login.tsx';
+import { LoadingScreen } from './components/LoadingScreen.tsx';
+import { FirestoreService } from './services/firestoreService.ts';
 import { AlertTriangle, X, RefreshCw } from 'lucide-react';
 
 const App: React.FC = () => {
@@ -41,7 +41,6 @@ const App: React.FC = () => {
     };
     init();
 
-    // Check every 30 seconds if still blocked
     const interval = setInterval(() => {
         if (isBlocked) checkStatus();
     }, 30000);

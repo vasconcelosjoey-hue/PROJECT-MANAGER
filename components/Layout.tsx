@@ -5,7 +5,7 @@ import {
   ChevronRight, LogOut, ExternalLink, Download 
 } from 'lucide-react';
 import { Link, useLocation } from 'react-router-dom';
-import { Logo } from './Logo';
+import { Logo } from './Logo.tsx';
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -28,7 +28,6 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
 
   return (
     <div className="min-h-screen flex bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100">
-      {/* Mobile Sidebar Overlay */}
       {isSidebarOpen && (
         <div 
           className="fixed inset-0 bg-black/50 z-40 lg:hidden backdrop-blur-sm"
@@ -36,7 +35,6 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
         />
       )}
 
-      {/* Sidebar */}
       <aside className={`
         fixed inset-y-0 left-0 z-50 w-72 transform transition-transform duration-300 ease-in-out
         bg-white dark:bg-slate-900 border-r border-slate-200 dark:border-slate-800
@@ -44,7 +42,6 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
         lg:translate-x-0 lg:static lg:flex-shrink-0
       `}>
         <div className="h-full flex flex-col">
-          {/* Header */}
           <div className="p-6 flex items-center justify-between">
             <div className="flex items-center space-x-3">
               <Logo size={42} />
@@ -58,7 +55,6 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
             </button>
           </div>
 
-          {/* Nav */}
           <nav className="flex-1 px-4 space-y-1 py-4">
             {menuItems.map((item) => (
               <Link
@@ -78,7 +74,6 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
             ))}
           </nav>
 
-          {/* Footer */}
           <div className="p-6 border-t border-slate-200 dark:border-slate-800">
             <div className="bg-slate-100 dark:bg-slate-800 rounded-2xl p-4">
               <p className="text-xs text-slate-500 mb-2">Usuário Demo</p>
@@ -101,9 +96,7 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
         </div>
       </aside>
 
-      {/* Main Content */}
       <main className="flex-1 flex flex-col min-w-0 overflow-hidden">
-        {/* Top Header */}
         <header className="h-16 flex items-center justify-between px-6 bg-white/80 dark:bg-slate-900/80 backdrop-blur-md sticky top-0 z-30 border-b border-slate-200 dark:border-slate-800 lg:hidden">
           <button onClick={() => setIsSidebarOpen(true)}>
             <Menu size={24} />

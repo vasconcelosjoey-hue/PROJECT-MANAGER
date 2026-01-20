@@ -12,8 +12,9 @@
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#0f172a">
     
-    <!-- Correção das Meta Tags depreciadas -->
+    <!-- Correção das Meta Tags depreciadas e melhorias PWA -->
     <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-title" content="PMANAGER">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <link rel="apple-touch-icon" href="https://picsum.photos/192/192">
     
@@ -26,6 +27,7 @@
             font-size: var(--font-scale);
             -webkit-tap-highlight-color: transparent;
             overflow-x: hidden;
+            background-color: #0f172a;
         }
         h1, h2, h3, .brand {
             font-family: 'Outfit', sans-serif;
@@ -59,6 +61,11 @@
         }
         .dark ::-webkit-scrollbar-thumb {
             background: #334155;
+        }
+        /* Animações nativas */
+        .animate-in {
+            animation-duration: 0.3s;
+            animation-fill-mode: forwards;
         }
     </style>
 <script type="importmap">

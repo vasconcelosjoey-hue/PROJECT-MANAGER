@@ -8,20 +8,24 @@ import { Project, Phase, Subphase, TaskLog, Reminder, UserSettings } from '../ty
 const DEMO_USER_ID = "demo";
 
 const handleFirestoreError = (error: any, fallback: any = []) => {
-  // Se db for null (falha na config), usamos o fallback sem estourar erro no console
-  if (!db) return fallback;
-  
-  if (error?.code === 'unavailable' || error?.message?.includes('offline')) {
-    console.debug("Offline: Buscando dados do cache local.");
+  if (!db) {
+    console.warn("Firestore não inicializado.");
     return fallback;
   }
   
-  if (error?.code === 'permission-denied') {
-    console.warn("Firestore: Chaves inválidas ou permissão negada. Verifique seu console Firebase.");
+  // Tratamento específico para estado offline
+  if (error?.code === 'unavailable' || error?.message?.includes('offline')) {
+    console.debug("Offline: Operando com cache local persistente.");
+    return fallback;
+  }
+  
+  // Erro de configuração ou permissão
+  if (error?.code === 'permission-denied' || error?.code === 'not-found') {
+    console.error("Firestore: Erro de permissão ou documento não encontrado. Verifique as regras de segurança.");
     return fallback;
   }
 
-  console.error("Firestore Error:", error);
+  console.error("Erro no Firestore:", error);
   return fallback;
 };
 

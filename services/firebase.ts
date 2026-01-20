@@ -19,14 +19,14 @@ import {
 } from 'firebase/firestore';
 import { getMessaging } from 'firebase/messaging';
 
-// Configuração Demo - Substitua pelos valores reais do seu console Firebase
+// Configuração real fornecida pelo usuário
 const firebaseConfig = {
-  apiKey: "DEMO_KEY_PLACEHOLDER",
-  authDomain: "project-manager-demo.firebaseapp.com",
-  projectId: "project-manager-demo",
-  storageBucket: "project-manager-demo.appspot.com",
-  messagingSenderId: "000000000000",
-  appId: "1:000000000000:web:000000000000"
+  apiKey: "AIzaSyBqMiJ-tZhCR8V24QbnKEfAKriXC-ztvJw",
+  authDomain: "project-manager-joia.firebaseapp.com",
+  projectId: "project-manager-joia",
+  storageBucket: "project-manager-joia.firebasestorage.app",
+  messagingSenderId: "361390049572",
+  appId: "1:361390049572:web:8affd1bd90fca481ba4bb1"
 };
 
 let db: any = null;
@@ -35,7 +35,7 @@ let messaging: any = null;
 try {
   const app = initializeApp(firebaseConfig);
   
-  // Cache persistente é crucial para o modo PWA funcionar sem internet
+  // Configuração de cache persistente para garantir funcionamento offline total
   db = initializeFirestore(app, {
     localCache: persistentLocalCache({
       tabManager: persistentMultipleTabManager()
@@ -46,11 +46,11 @@ try {
     try {
       messaging = getMessaging(app);
     } catch (e) {
-      console.warn("FCM não suportado neste navegador.");
+      console.warn("FCM não suportado ou negado neste navegador.");
     }
   }
 } catch (e) {
-  console.error("Falha ao inicializar Firebase. O app entrará em modo de visualização offline.");
+  console.error("Erro crítico ao inicializar o Firebase:", e);
 }
 
 export { 

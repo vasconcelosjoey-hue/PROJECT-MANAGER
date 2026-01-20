@@ -1,8 +1,9 @@
 
 {
-  "name": "PROJECT MANAGER",
-  "short_name": "PMANAGER",
-  "start_url": "/#/",
+  "name": "Project Manager",
+  "short_name": "PM",
+  "description": "Premium project management PWA. Powered by JOI.A.",
+  "start_url": "./",
   "display": "standalone",
   "background_color": "#0f172a",
   "theme_color": "#6366f1",
@@ -10,7 +11,8 @@
     {
       "src": "https://picsum.photos/192/192",
       "sizes": "192x192",
-      "type": "image/png"
+      "type": "image/png",
+      "purpose": "any maskable"
     },
     {
       "src": "https://picsum.photos/512/512",
@@ -21,12 +23,17 @@
   "shortcuts": [
     {
       "name": "Projetos",
-      "url": "/#/projects",
+      "url": "#/projects",
       "icons": [{ "src": "https://picsum.photos/96/96", "sizes": "96x96" }]
     },
     {
       "name": "Lembretes",
-      "url": "/#/reminders",
+      "url": "#/reminders",
+      "icons": [{ "src": "https://picsum.photos/96/96", "sizes": "96x96" }]
+    },
+    {
+      "name": "Log",
+      "url": "#/logs",
       "icons": [{ "src": "https://picsum.photos/96/96", "sizes": "96x96" }]
     }
   ]

@@ -17,9 +17,8 @@ import {
   deleteDoc, 
   addDoc 
 } from 'firebase/firestore';
-import { getMessaging } from 'firebase/messaging';
+import { getMessaging, getToken, onMessage } from 'firebase/messaging';
 
-// Configuração real fornecida pelo usuário
 const firebaseConfig = {
   apiKey: "AIzaSyBqMiJ-tZhCR8V24QbnKEfAKriXC-ztvJw",
   authDomain: "project-manager-joia.firebaseapp.com",
@@ -35,7 +34,6 @@ let messaging: any = null;
 try {
   const app = initializeApp(firebaseConfig);
   
-  // Configuração de cache persistente para garantir funcionamento offline total
   db = initializeFirestore(app, {
     localCache: persistentLocalCache({
       tabManager: persistentMultipleTabManager()
@@ -43,14 +41,10 @@ try {
   });
 
   if (typeof window !== 'undefined' && 'serviceWorker' in navigator) {
-    try {
-      messaging = getMessaging(app);
-    } catch (e) {
-      console.warn("FCM não suportado ou negado neste navegador.");
-    }
+    messaging = getMessaging(app);
   }
 } catch (e) {
-  console.error("Erro crítico ao inicializar o Firebase:", e);
+  console.error("Firebase Init Error:", e);
 }
 
 export { 
@@ -67,5 +61,7 @@ export {
   orderBy, 
   updateDoc, 
   deleteDoc, 
-  addDoc 
+  addDoc,
+  getToken,
+  onMessage
 };

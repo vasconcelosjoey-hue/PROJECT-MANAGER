@@ -18,10 +18,10 @@ import {
   deleteDoc, 
   addDoc 
 } from 'firebase/firestore';
-import { getMessaging, getToken, onMessage } from 'firebase/messaging';
+import { getMessaging } from 'firebase/messaging';
 
 const firebaseConfig = {
-  apiKey: "YOUR_API_KEY",
+  apiKey: "YOUR_API_KEY", // O usuário deve substituir pelas suas chaves
   authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
   projectId: "YOUR_PROJECT_ID",
   storageBucket: "YOUR_PROJECT_ID.appspot.com",
@@ -36,7 +36,7 @@ let messaging: any;
 try {
   app = initializeApp(firebaseConfig);
   
-  // Inicialização moderna com cache persistente para evitar erros de "client is offline"
+  // Inicialização com cache persistente multinível para PWA
   db = initializeFirestore(app, {
     localCache: persistentLocalCache({
       tabManager: persistentMultipleTabManager()
@@ -46,10 +46,10 @@ try {
   try {
     messaging = getMessaging(app);
   } catch (e) {
-    console.warn("FCM not supported in this environment");
+    console.warn("FCM not supported or enabled in this browser");
   }
 } catch (e) {
-  console.error("Firebase failed to initialize.", e);
+  console.error("Firebase failed to initialize. Check your configuration.", e);
 }
 
 export { 

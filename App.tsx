@@ -9,37 +9,31 @@ import { Logs } from './views/Logs';
 import { Settings } from './views/Settings';
 import { Login } from './views/Login';
 import { LoadingScreen } from './components/LoadingScreen';
-import { FirestoreService } from './services/firestoreService';
+import { FirestoreService, isFirestoreBlocked } from './services/firestoreService';
+import { AlertTriangle, X } from 'lucide-react';
 
 const App: React.FC = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [isAuth, setIsAuth] = useState(false);
   const [theme, setTheme] = useState<'light' | 'dark'>('dark');
+  const [showWarning, setShowWarning] = useState(false);
 
   useEffect(() => {
     const init = async () => {
-      console.log("PM: Iniciando sequência de boot...");
+      // Testar saúde do Firestore antes de tudo
+      await FirestoreService.checkHealth();
       
-      // Timeout de 2.5s para garantir que o app carregue mesmo se o Firebase falhar
-      const timeout = new Promise(resolve => setTimeout(() => resolve('timeout'), 2500));
-      const settingsPromise = FirestoreService.getSettings();
-      
-      try {
-        const result = await Promise.race([settingsPromise, timeout]);
-        
-        if (result === 'timeout') {
-          console.warn("PM: O Firebase demorou demais para responder. Entrando em modo resiliente.");
-        } else if (result) {
-          const settings = result as any;
-          setTheme(settings.theme);
-          document.documentElement.classList.toggle('dark', settings.theme === 'dark');
-          document.documentElement.style.setProperty('--font-scale', `${settings.fontScale}%`);
-        }
-      } catch (err) {
-        console.error("PM: Erro crítico no carregamento inicial:", err);
+      if (isFirestoreBlocked) {
+        setShowWarning(true);
       }
 
-      // Verificação de auth demo
+      const settings = await FirestoreService.getSettings();
+      if (settings) {
+        setTheme(settings.theme);
+        document.documentElement.classList.toggle('dark', settings.theme === 'dark');
+        document.documentElement.style.setProperty('--font-scale', `${settings.fontScale}%`);
+      }
+
       const demoAuth = localStorage.getItem('demo_auth');
       if (demoAuth === 'true') setIsAuth(true);
       
@@ -54,6 +48,21 @@ const App: React.FC = () => {
 
   return (
     <Router>
+      {showWarning && (
+        <div className="fixed bottom-4 left-4 right-4 z-[9999] bg-red-600 text-white p-4 rounded-2xl shadow-2xl flex items-center justify-between border-2 border-white/20 animate-in slide-in-from-bottom-4">
+          <div className="flex items-center space-x-3">
+            <AlertTriangle className="flex-shrink-0" />
+            <div className="text-xs font-bold leading-tight">
+              <p className="uppercase tracking-widest">Acesso ao Banco Bloqueado</p>
+              <p className="opacity-80 font-medium">Mude 'if false;' para 'if true;' no Console Firebase > Rules e clique em PUBLICAR.</p>
+            </div>
+          </div>
+          <button onClick={() => setShowWarning(false)} className="p-2 hover:bg-white/10 rounded-full">
+            <X size={16} />
+          </button>
+        </div>
+      )}
+
       <Routes>
         <Route path="/login" element={<Login onLogin={() => setIsAuth(true)} />} />
         

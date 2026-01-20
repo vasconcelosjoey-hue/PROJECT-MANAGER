@@ -7,40 +7,46 @@ import { Project, Phase, Subphase, TaskLog, Reminder, UserSettings } from '../ty
 
 const DEMO_USER_ID = "demo";
 
+// Sistema de monitoramento de saúde do Firestore
+export let isFirestoreBlocked = false;
+
 const handleFirestoreError = (error: any, context: string, fallback: any = []) => {
-  if (!db) {
-    console.warn(`PM [${context}]: Banco de dados não inicializado.`);
-    return fallback;
-  }
-  
-  if (error?.code === 'unavailable' || error?.message?.includes('offline')) {
-    console.debug(`PM [${context}]: Modo Offline. Usando cache local.`);
-    return fallback;
-  }
+  if (!db) return fallback;
   
   if (error?.code === 'permission-denied') {
-    const msg = `
-      🚨 ERRO DE PERMISSÃO NO FIREBASE! 🚨
-      O seu banco está configurado com 'if false;'. 
-      Acesse o Console do Firebase > Firestore Database > Rules
-      e mude para: allow read, write: if true;
-      Depois clique em PUBLICAR.
-    `;
-    console.error(msg);
-    alert("Erro de Permissão: Verifique as Regras (Rules) no Console do Firebase.");
+    isFirestoreBlocked = true;
+    console.warn(`PM [${context}]: Acesso negado pelas regras do Firebase. Verifique as 'Rules'.`);
+    // Retornamos o fallback silenciosamente para não travar a renderização do React
     return fallback;
   }
 
-  if (error?.code === 'not-found') {
-    console.error(`PM [${context}]: Firestore não encontrado. Crie o banco no console.`);
+  if (error?.code === 'unavailable' || error?.message?.includes('offline')) {
+    console.debug(`PM [${context}]: Operando em cache offline.`);
     return fallback;
   }
 
-  console.error(`PM [${context}] Erro desconhecido:`, error);
+  console.error(`PM [${context}] Erro:`, error);
   return fallback;
 };
 
 export const FirestoreService = {
+  // Função para testar conexão rapidamente
+  checkHealth: async () => {
+    try {
+      if (!db) return false;
+      const ref = doc(db, 'healthCheck', 'test');
+      await getDoc(ref);
+      isFirestoreBlocked = false;
+      return true;
+    } catch (e: any) {
+      if (e?.code === 'permission-denied') {
+        isFirestoreBlocked = true;
+        return false;
+      }
+      return true; // Outros erros (como offline) não significam bloqueio de regra
+    }
+  },
+
   getProjects: async (): Promise<Project[]> => {
     try {
       if (!db) return [];

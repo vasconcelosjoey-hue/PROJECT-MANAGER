@@ -1,8 +1,8 @@
 
 import React, { useState, useEffect } from 'react';
 import { Search, Filter, Clock, FileText } from 'lucide-react';
-import { FirestoreService } from '../services/firestoreService';
-import { TaskLog } from '../types';
+import { FirestoreService } from '../services/firestoreService.ts';
+import { TaskLog } from '../types.ts';
 
 export const Logs: React.FC = () => {
   const [logs, setLogs] = useState<TaskLog[]>([]);
@@ -62,7 +62,7 @@ export const Logs: React.FC = () => {
                   <h4 className="font-bold text-slate-800 dark:text-slate-100">{log.title}</h4>
                   <div className="flex items-center text-[10px] font-bold text-slate-400 uppercase tracking-widest">
                     <Clock size={12} className="mr-1" />
-                    Agorinha
+                    Ativo
                   </div>
                 </div>
                 <p className="text-sm text-slate-500 dark:text-slate-400 leading-relaxed">

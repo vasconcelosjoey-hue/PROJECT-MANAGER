@@ -2,7 +2,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Mail, Lock, ArrowRight } from 'lucide-react';
-import { Logo } from '../components/Logo';
+import { Logo } from '../components/Logo.tsx';
 
 interface LoginProps {
   onLogin: () => void;

@@ -1,8 +1,8 @@
 
 import React, { useState, useEffect } from 'react';
 import { Moon, Sun, Monitor, Type, Bell, Smartphone, Download, Check } from 'lucide-react';
-import { FirestoreService } from '../services/firestoreService';
-import { messaging, getToken } from '../services/firebase';
+import { FirestoreService } from '../services/firestoreService.ts';
+import { messaging, getToken } from '../services/firebase.ts';
 
 interface SettingsProps {
   setTheme: (theme: 'light' | 'dark') => void;
@@ -60,7 +60,7 @@ export const Settings: React.FC<SettingsProps> = ({ setTheme }) => {
       const permission = await Notification.requestPermission();
       
       if (permission === 'granted' && messaging) {
-        // Usando a chave VAPID que você gerou na imagem
+        // Usando a chave VAPID configurada
         const vapidKey = 'BLeB5994v6MxN38numEz9hPcz6FaQtMBVfI9EltZhEBmtFlpznQ4Zb2fGwPlRd5nTamy_meltRbaupessxwh8ks';
         
         const token = await getToken(messaging, { vapidKey }).catch((err) => {
@@ -70,7 +70,6 @@ export const Settings: React.FC<SettingsProps> = ({ setTheme }) => {
 
         if (token) {
             console.log('FCM Token Gerado:', token);
-            // Registra no log para confirmar que funcionou
             await FirestoreService.addLog({
                 title: 'Notificações Ativadas',
                 details: `Dispositivo registrado com sucesso. Token: ${token.substring(0, 10)}...`
@@ -78,13 +77,10 @@ export const Settings: React.FC<SettingsProps> = ({ setTheme }) => {
             setPushStatus('success');
         } else {
             setPushStatus('error');
-            alert('Não foi possível gerar o token de identificação. Verifique se está em HTTPS.');
+            alert('Não foi possível gerar o token. Verifique se o site está em HTTPS.');
         }
       } else {
         setPushStatus('error');
-        if (permission === 'denied') {
-            alert('Você bloqueou as notificações. Ative-as nas configurações do seu navegador.');
-        }
       }
     } catch (error) {
       console.error('Erro no processo de push:', error);

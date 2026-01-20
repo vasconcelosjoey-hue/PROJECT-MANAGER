@@ -62,7 +62,7 @@ const App: React.FC = () => {
             </div>
             <div className="text-xs font-bold leading-tight uppercase tracking-tighter">
               <p className="text-sm font-black mb-1">Acesso ao Banco Bloqueado</p>
-              <p className="opacity-80 font-medium normal-case">Mude 'if false;' para 'if true;' no Console Firebase > Rules e clique em PUBLICAR.</p>
+              <p className="opacity-80 font-medium normal-case">Mude 'if false;' para 'if true;' no Console Firebase &gt; Rules e clique em PUBLICAR.</p>
             </div>
           </div>
           <div className="flex items-center space-x-2">

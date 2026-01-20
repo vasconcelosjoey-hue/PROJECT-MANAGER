@@ -5,8 +5,8 @@ import {
     ChevronLeft, Plus, ChevronDown, ChevronUp, 
     CheckCircle2, Circle, Edit2, Trash2, Calendar, Clock, AlertTriangle, X
 } from 'lucide-react';
-import { FirestoreService } from '../services/firestoreService';
-import { Project, Phase, Subphase } from '../types';
+import { FirestoreService } from '../services/firestoreService.ts';
+import { Project, Phase, Subphase } from '../types.ts';
 
 export const ProjectDetail: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -203,7 +203,7 @@ export const ProjectDetail: React.FC = () => {
                                                 </button>
                                                 <span className={`text-sm font-semibold ${sub.done ? 'line-through text-slate-400' : ''}`}>{sub.title}</span>
                                             </div>
-                                            <button className="text-slate-300 hover:text-red-500"><Trash2 size={14} /></button>
+                                            <button className="text-slate-300 hover:text-red-500" onClick={() => FirestoreService.deleteSubphase(sub.id).then(() => loadSubphases(phase.id))}><Trash2 size={14} /></button>
                                         </div>
                                     ))
                                 )}
@@ -212,7 +212,7 @@ export const ProjectDetail: React.FC = () => {
                           
                           <div className="flex justify-end space-x-2 pt-4 border-t border-slate-100 dark:border-slate-800">
                              <button className="p-2 text-slate-400 hover:text-indigo-500 transition-colors"><Edit2 size={18} /></button>
-                             <button className="p-2 text-slate-400 hover:text-red-500 transition-colors"><Trash2 size={18} /></button>
+                             <button className="p-2 text-slate-400 hover:text-red-500 transition-colors" onClick={() => { if(confirm('Excluir fase?')) FirestoreService.deletePhase(phase.id).then(loadData) }}><Trash2 size={18} /></button>
                           </div>
                        </div>
                     </div>
@@ -244,7 +244,7 @@ export const ProjectDetail: React.FC = () => {
           {/* Add Subphase Popup */}
           {addingSubphaseTo && (
               <div className="fixed inset-0 z-[110] flex items-center justify-center p-6 bg-black/50 backdrop-blur-sm">
-                  <form onSubmit={handleAddSubphase} className="bg-white dark:bg-slate-900 w-full max-w-sm rounded-3xl p-8 shadow-2xl space-y-6">
+                  <form onSubmit={handleAddSubphase} className="bg-white dark:bg-slate-900 w-full max-sm rounded-3xl p-8 shadow-2xl space-y-6">
                       <div className="flex justify-between items-center">
                           <h3 className="text-xl font-bold brand">Nova Subfase</h3>
                           <button type="button" onClick={() => setAddingSubphaseTo(null)} className="text-slate-400 hover:text-slate-600"><X size={20} /></button>

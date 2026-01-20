@@ -1,8 +1,8 @@
 
 import React, { useState, useEffect } from 'react';
 import { Bell, Plus, Calendar, Clock, Tag, CheckCircle2, X } from 'lucide-react';
-import { FirestoreService } from '../services/firestoreService';
-import { Reminder, ReminderPriority, ReminderStatus } from '../types';
+import { FirestoreService } from '../services/firestoreService.ts';
+import { Reminder, ReminderPriority, ReminderStatus } from '../types.ts';
 
 export const Reminders: React.FC = () => {
   const [reminders, setReminders] = useState<Reminder[]>([]);

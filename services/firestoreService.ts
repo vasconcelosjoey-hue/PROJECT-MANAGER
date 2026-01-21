@@ -1,7 +1,7 @@
 
 import { 
   db, collection, doc, setDoc, getDoc, getDocs, query, 
-  where, orderBy, updateDoc, deleteDoc, addDoc, serverTimestamp 
+  where, orderBy, updateDoc, deleteDoc, addDoc, serverTimestamp, limit 
 } from './firebase.ts';
 import { Project, Phase, Subphase, TaskLog, Reminder, UserSettings } from '../types.ts';
 
@@ -11,14 +11,17 @@ export const FirestoreService = {
   checkHealth: async (): Promise<boolean> => {
     try {
       if (!db) return false;
-      const q = query(collection(db, 'projects'), where('ownerId', '==', 'health-check'), orderBy('orderIndex'));
+      // Teste simples sem filtros complexos para verificar apenas permissão de leitura
+      const q = query(collection(db, 'projects'), limit(1));
       await getDocs(q);
       return true;
     } catch (e: any) {
+      console.warn("Health Check Status:", e?.code);
       if (e?.code === 'permission-denied') {
         return false;
       }
-      return true;
+      // Se for erro de rede ou outro, consideramos saudável para não travar a UI
+      return true; 
     }
   },
 
@@ -36,17 +39,18 @@ export const FirestoreService = {
 
   addProject: async (project: Partial<Project>) => {
     try {
-      if (!db) return null;
-      return await addDoc(collection(db, 'projects'), {
+      if (!db) throw new Error("Banco de dados não inicializado");
+      const docRef = await addDoc(collection(db, 'projects'), {
         ...project,
         ownerId: DEMO_USER_ID,
         createdAt: serverTimestamp(),
         updatedAt: serverTimestamp(),
         orderIndex: project.orderIndex || 0
       });
+      return docRef;
     } catch (e) {
-      console.error("Erro ao adicionar projeto:", e);
-      return null;
+      console.error("Erro crítico ao adicionar projeto:", e);
+      throw e; // Lançar para o componente tratar
     }
   },
 

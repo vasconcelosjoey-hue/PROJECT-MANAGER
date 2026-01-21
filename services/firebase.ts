@@ -15,7 +15,8 @@ import {
   orderBy, 
   updateDoc, 
   deleteDoc, 
-  addDoc 
+  addDoc,
+  limit
 } from 'firebase/firestore';
 import { getMessaging, getToken, onMessage, isSupported } from 'firebase/messaging';
 
@@ -67,5 +68,6 @@ export {
   deleteDoc, 
   addDoc,
   getToken,
-  onMessage
+  onMessage,
+  limit
 };

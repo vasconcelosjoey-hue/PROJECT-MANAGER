@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect } from 'react';
-import { Plus, Edit3, Trash2, ExternalLink, Calendar, LayoutGrid, X } from 'lucide-react';
+import { Plus, Edit3, Trash2, ExternalLink, Calendar, LayoutGrid, X, Loader2 } from 'lucide-react';
 import { FirestoreService } from '../services/firestoreService.ts';
 import { Project, ProjectStatus } from '../types.ts';
 import { Link } from 'react-router-dom';
@@ -8,6 +8,7 @@ import { Link } from 'react-router-dom';
 export const ProjectList: React.FC = () => {
   const [projects, setProjects] = useState<Project[]>([]);
   const [isAdding, setIsAdding] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [newName, setNewName] = useState('');
 
   const loadProjects = async () => {
@@ -21,22 +22,30 @@ export const ProjectList: React.FC = () => {
 
   const handleAddProject = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!newName.trim()) return;
+    if (!newName.trim() || isSubmitting) return;
     
-    await FirestoreService.addProject({
-      name: newName,
-      status: ProjectStatus.ACTIVE,
-      orderIndex: projects.length,
-    });
-    
-    setNewName('');
-    setIsAdding(false);
-    loadProjects();
-    
-    await FirestoreService.addLog({
-        title: 'Projeto Criado',
-        details: `Projeto "${newName}" iniciado com sucesso.`
-    });
+    setIsSubmitting(true);
+    try {
+      await FirestoreService.addProject({
+        name: newName,
+        status: ProjectStatus.ACTIVE,
+        orderIndex: projects.length,
+      });
+      
+      await FirestoreService.addLog({
+          title: 'Projeto Criado',
+          details: `Projeto "${newName}" iniciado com sucesso.`
+      });
+
+      setNewName('');
+      setIsAdding(false);
+      loadProjects();
+    } catch (error: any) {
+      console.error("Erro na UI ao adicionar:", error);
+      alert(`Erro ao salvar: ${error?.message || 'Verifique sua conexão ou as regras do banco.'}`);
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const handleDelete = async (id: string, name: string) => {
@@ -71,14 +80,22 @@ export const ProjectList: React.FC = () => {
           <form onSubmit={handleAddProject} className="bg-white dark:bg-slate-900 w-full max-w-md rounded-[2.5rem] p-10 shadow-2xl space-y-8 animate-in zoom-in-95">
             <div className="flex justify-between items-center">
                 <h3 className="text-2xl font-black brand uppercase tracking-tighter">Novo Projeto</h3>
-                <button type="button" onClick={() => setIsAdding(false)} className="text-slate-400 hover:text-slate-600"><X size={28} /></button>
+                <button 
+                  type="button" 
+                  disabled={isSubmitting}
+                  onClick={() => setIsAdding(false)} 
+                  className="text-slate-400 hover:text-slate-600 disabled:opacity-50"
+                >
+                  <X size={28} />
+                </button>
             </div>
             <div className="space-y-2">
               <label className="text-[10px] font-black text-slate-400 uppercase tracking-[0.25em] px-1">Identificação do Projeto</label>
               <input 
                 autoFocus
                 required
-                className="w-full bg-slate-100 dark:bg-slate-800 border-none rounded-3xl p-5 focus:ring-4 focus:ring-indigo-500/20 outline-none font-bold text-lg"
+                disabled={isSubmitting}
+                className="w-full bg-slate-100 dark:bg-slate-800 border-none rounded-3xl p-5 focus:ring-4 focus:ring-indigo-500/20 outline-none font-bold text-lg disabled:opacity-50"
                 placeholder="Ex: Redesign E-commerce 2.0"
                 value={newName}
                 onChange={e => setNewName(e.target.value)}
@@ -86,9 +103,17 @@ export const ProjectList: React.FC = () => {
             </div>
             <button 
                 type="submit"
-                className="w-full bg-indigo-600 text-white py-5 rounded-3xl font-black text-sm uppercase tracking-[0.2em] shadow-xl shadow-indigo-600/20 hover:bg-indigo-700 transition-all"
+                disabled={isSubmitting || !newName.trim()}
+                className="w-full bg-indigo-600 text-white py-5 rounded-3xl font-black text-sm uppercase tracking-[0.2em] shadow-xl shadow-indigo-600/20 hover:bg-indigo-700 transition-all flex items-center justify-center space-x-2 disabled:bg-slate-400 disabled:shadow-none"
             >
-                Salvar Projeto (Enter)
+                {isSubmitting ? (
+                  <>
+                    <Loader2 size={20} className="animate-spin" />
+                    <span>Gravando Dados...</span>
+                  </>
+                ) : (
+                  <span>Salvar Projeto (Enter)</span>
+                )}
             </button>
           </form>
         </div>
@@ -126,17 +151,17 @@ export const ProjectList: React.FC = () => {
                   <div>
                     <div className="flex justify-between text-[10px] font-black uppercase tracking-widest mb-2 px-1">
                       <span className="text-slate-400">Status Geral</span>
-                      <span className="text-indigo-600">65%</span>
+                      <span className="text-indigo-600">--%</span>
                     </div>
                     <div className="h-2.5 w-full bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
-                      <div className="h-full bg-indigo-500 rounded-full" style={{ width: '65%' }} />
+                      <div className="h-full bg-indigo-500 rounded-full" style={{ width: '0%' }} />
                     </div>
                   </div>
                   
                   <div className="flex items-center justify-between pt-6 border-t border-slate-100 dark:border-slate-800 mt-auto">
                     <div className="flex items-center space-x-2 text-slate-400">
                       <Calendar size={16} />
-                      <span className="text-[10px] font-bold uppercase tracking-wider">Próxima entrega: 15 Out</span>
+                      <span className="text-[10px] font-bold uppercase tracking-wider">Acessar Painel</span>
                     </div>
                     <div className="p-2 bg-indigo-50 dark:bg-indigo-900/20 rounded-xl text-indigo-600 group-hover:scale-110 transition-transform">
                       <ExternalLink size={18} />
